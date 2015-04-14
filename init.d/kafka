@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# Start up Kafka on Boot
+#-----------------------------------------------------------------------------------------------------------# 
+# vi /etc/init.d/kafka
+#
+# Adding a Service to Default runlevels
+# update-rc.d kafka defaults
+#
+# service --status-all 
+#-----------------------------------------------------------------------------------------------------------# 
+
+RETVAL=$?
+KAFKA_HOME="/opt/kafka_2.9.1-0.8.2.1"
+
+case "$1" in
+ start)
+        if [ -f $KAFKA_HOME/bin/zookeeper-server-start.sh ];
+          then
+            echo $"Starting Kafka"
+
+            # Start Zookeper
+            /bin/su root $KAFKA_HOME/bin/zookeeper-server-start.sh $KAFKA_HOME/config/zookeeper.properties &
+            sleep 10;
+            # Start Kafka Broker
+            /bin/su root $KAFKA_HOME/bin/kafka-server-start.sh $KAFKA_HOME/config/server.properties &
+        fi
+        ;;
+ stop)
+        if [ -f $KAFKA_HOME/bin/kafka-server-stop.sh ];
+          then
+            echo $"Stopping Kafka"
+            /bin/su root $KAFKA_HOME/bin/kafka-server-stop.sh &
+            sleep 10;
+            /bin/su root $KAFKA_HOME/bin/zookeeper-server-stop.sh &
+        fi
+        ;;
+ *)
+        echo $"Usage: $0 {start|stop}"
+        exit 1
+        ;;
+esac
+
